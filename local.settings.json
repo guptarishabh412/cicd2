@@ -1,0 +1,29 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=ngpgmssaavinasheastus2;AccountKey=rLvb+5KEvVF1zxFR75vEm53zOtZR8/aqFucgGHK6feiQEwewcei2lObvfuAj4beXSHOq41JnKjhO+ASto6hqCQ==;EndpointSuffix=core.windows.net",
+    "FUNCTIONS_WORKER_RUNTIME": "java",
+    "FUNCTIONS_EXTENSION_VERSION": "~4",
+    "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "",
+    "WEBSITE_CONTENTSHARE": "",
+    "WEBSITE_RUN_FROM_PACKAGE": "1",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "042570da-db3d-44f9-a3b5-94180cb744e8",
+    "CosmosDBDatabaseName": "",
+    "CosmosDBCollectionName": "",
+    "CosmosDbConnectionString": "",
+    "AzureWebJobsCosmosDBConnectionString": "",
+    "AzureWebJobsEventGridOutputBindingTopicUriString": "",
+    "AzureWebJobsEventGridOutputBindingTopicKeyString": "",
+    "AzureWebJobsEventHubSender": "",
+    "AzureWebJobsEventHubSender_2": "",
+    "BrokerList": "",
+    "ConfluentCloudUsername": "",
+    "ConfluentCloudPassword": "",
+    "AzureWebJobsServiceBus": "",
+    "SBTopicName": "",
+    "SBTopicSubName": "",
+    "SBQueueName": "",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=042570da-db3d-44f9-a3b5-94180cb744e8;IngestionEndpoint=https://eastus2-3.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus2.livediagnostics.monitor.azure.com/",
+    "APPLICATIONINSIGHTS_ENABLE_AGENT": "false"
+  }
+}
