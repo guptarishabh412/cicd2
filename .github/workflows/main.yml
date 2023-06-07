@@ -1,0 +1,99 @@
+name: Deploy Java project to Azure Function App
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches:
+      - '**'
+
+env:
+  POM_XML_DIRECTORY: '.'                     # set this to the directory which contains pom.xml file
+  JAVA_VERSION: '11'                      # set this to the dotnet version to use
+  DOCKER_REGISTRY: rifrog.jfrog.io
+  DOCKER_IMAGE: repokey/imagename             #check  :tag
+  DOCKER_USERNAME_REF: rishabhgupta412
+  DOCKER_SAAS_PASSWORD_REF: dckr_pat_LKGGPlHGDXH20WgyhA65wA9NXGg  #AKCp8oho7SvxvY2D7E6ZDQ4Nephv7wyhgYqcvVMF62ZNg2cRiLTctynBY5m3rTZDwbsBuXzzD
+
+
+jobs:
+  build:
+    name: maven-test
+    runs-on: ubuntu-latest   # "tsa"
+    defaults:
+      run:
+        working-directory: '.'
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v2.3.4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup Java Sdk ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "adopt"
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Build with Maven
+        run: mvn -U -B clean verify
+
+      - name: Upload artifact for deployment job
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: function-app
+          path: "${{ github.workspace }}/target/*.jar"
+
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: function-app
+
+      - name: 'list files'
+        shell: bash
+        run: |
+           ls 
+           echo first
+           cd target
+           ls 
+
+      - name: 🧱 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        id: buildx
+        with:
+          install: true
+          
+      - name: Login to my Artifactory Docker Registry
+        uses: docker/login-action@v2
+        with:
+          username: ${{ env.ARTIFACTORY_USER }}
+          password: ${{ env.ARTIFACTORY_SAAS_API_KEY }}
+
+
+      - name: setting docker version
+        id: github
+        run: |
+          IFS=-
+          set -- `git describe --long --tags --dirty --always`
+          version=`basename $1``date '+%s'`
+          echo "Version:$version"
+          echo  "::set-output name=tag_version::$version"
+      - name: print tag versions
+        run: echo "tag-version:${{ steps.github.outputs.tag_version }}"
+
+      - name: 🐳 Docker build & push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: |
+             ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ steps.github.outputs.tag_version }}
+      - name: 🐳 Docker logout
+        if: always()
+        run: docker logout ${{ env.DOCKER_REGISTRY }}
