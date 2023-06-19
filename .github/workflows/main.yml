@@ -13,7 +13,8 @@ env:
   DOCKER_IMAGE: repokey/imagename             #check  :tag
   DOCKER_USERNAME_REF: rishabh.gupta@zopsmart.com
   DOCKER_SAAS_PASSWORD_REF: cmVmdGtuOjAxOjE3MTg3MDEyNjY6ZWk3REJrQ1NFT0lUQWF3dE1tNloyZXdLdEps #dckr_pat_LKGGPlHGDXH20WgyhA65wA9NXGg  #AKCp8oho7SvxvY2D7E6ZDQ4Nephv7wyhgYqcvVMF62ZNg2cRiLTctynBY5m3rTZDwbsBuXzzD
-
+  AZURE_FUNCTIONAPP_NAME : az-function22-7
+  DEV_RG : az-function22-7_group
 
 jobs:
   build:
@@ -95,6 +96,29 @@ jobs:
           push: true
           tags: |
              ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ steps.github.outputs.tag_version }}
+      - name: Login via Azure CLI
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Setup Private Registry in Azure
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.0.72
+          inlineScript: |
+            az functionapp config appsettings set \
+            --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
+            --resource-group ${{env.DEV_RG}} \
+            --settings DOCKER_REGISTRY_SERVER_URL=${{ env.DOCKER_REGISTRY }} \
+              DOCKER_REGISTRY_SERVER_USERNAME=${{ secrets.ARTIFACTORY_USER }} \
+              DOCKER_REGISTRY_SERVER_PASSWORD=${{ secrets.ARTIFACTORY_SAAS_API_KEY }}
+
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-container-action@v1.0.2
+        id: deploy-to-functionApp
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          image: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
       - name: 🐳 Docker logout
         if: always()
         run: docker logout ${{ env.DOCKER_REGISTRY }}
