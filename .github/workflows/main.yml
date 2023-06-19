@@ -99,7 +99,7 @@ jobs:
       - name: Login via Azure CLI
         uses: Azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: '{"appId": "1ba1fe1e-d2eb-4232-bfb1-601b626ee926","displayName": "azure-cli-2023-06-19-10-06-05","password": "h6M8Q~aYJ9iIdGgekhaN.3nTx_vAQO2jMmryeaJJ","tenant": "3a3d8f93-8fe2-4192-a017-5a58b3b03565"}'
           
       - name: Setup Private Registry in Azure
         uses: azure/CLI@v1
