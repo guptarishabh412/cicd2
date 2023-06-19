@@ -1,28 +1,27 @@
-name: Deploy Java project to Azure Function App
+name: Java
 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
+  pull_request:
+    branches:
+      - main
+      - rocket-development
+
   push:
     branches:
-      - '**'
+      - main
+      - rocket-development
 
 env:
-  POM_XML_DIRECTORY: '.'                     # set this to the directory which contains pom.xml file
-  JAVA_VERSION: '11'                      # set this to the dotnet version to use
-  DOCKER_REGISTRY: rifrog.jfrog.io
-  DOCKER_IMAGE: repokey/imagename             #check  :tag
-  DOCKER_USERNAME_REF: rishabh.gupta@zopsmart.com
-  DOCKER_SAAS_PASSWORD_REF: cmVmdGtuOjAxOjE3MTg3MDEyNjY6ZWk3REJrQ1NFT0lUQWF3dE1tNloyZXdLdEps #dckr_pat_LKGGPlHGDXH20WgyhA65wA9NXGg  #AKCp8oho7SvxvY2D7E6ZDQ4Nephv7wyhgYqcvVMF62ZNg2cRiLTctynBY5m3rTZDwbsBuXzzD
-  AZURE_FUNCTIONAPP_NAME : az-function22-7
-  DEV_RG : az-function22-7_group
+  app_name: mentor-pro-api
+  artifact_directory: mentor-pro-api
+
+defaults:
+  run:
+    working-directory: .
 
 jobs:
   build:
-    name: maven-test
-    runs-on: ubuntu-latest   # "tsa"
-    defaults:
-      run:
-        working-directory: '.'
+    runs-on: ubuntu-latest
     steps:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v2.3.4
@@ -44,62 +43,46 @@ jobs:
       - name: Build with Maven
         run: mvn -U -B clean verify
 
-      - name: Upload artifact for deployment job
-        if: always()
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: function-app
-          path: "${{ github.workspace }}/target/*.jar"
+          name: build artifact
+          path: target
 
-      - name: Download artifact from build job
+  dockerize:
+    runs-on: ubuntu-latest
+    name: Dockerize
+    needs: build
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Download Artifacts
         uses: actions/download-artifact@v2
         with:
-          name: function-app
-          
-      - name: 'list files1'
-        shell: bash
-        run: ls
+          name: build artifact
+          path: target
 
-      - name: 🧱 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-        id: buildx
-        with:
-          install: true
-          
-      - name: 'list files2'
-        shell: bash
-        run: ls
-          
-      - name: Login to my Artifactory Docker Registry
-        uses: docker/login-action@v2
+      - name: Login to GCR
+        uses: docker/login-action@v1
         with:
           registry: ${{ env.DOCKER_REGISTRY }}
           username: ${{ env.DOCKER_USERNAME_REF }}
           password: ${{ env.DOCKER_SAAS_PASSWORD_REF }}
-          
-      - name: 'list files3'
-        shell: bash
-        run: ls
 
-      - name: setting docker version
-        id: github
-        run: |
-          IFS=-
-          set -- `git describe --long --tags --dirty --always`
-          version=`basename $1``date '+%s'`
-          echo "Version:$version"
-          echo  "::set-output name=tag_version::$version"
-          
-      - name: 'list files4'
-        shell: bash
-        run: ls
-        
-      - name: print tag versions
-        run: echo "tag-version:${{ steps.github.outputs.tag_version }}"
+      # - name: Login to my Artifactory Docker Registry
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: ${{ env.DOCKER_REGISTRY }}
+      #     username: ${{ env.DOCKER_USERNAME_REF }}
+      #     password: ${{ env.DOCKER_SAAS_PASSWORD_REF }}
 
-      - name: 'list files5'
-        shell: bash
-        run: ls
+      # - name: Build and Push Image
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     push: true
+      #     context: .
+          # tags: gcr.io/zs-products/${{ env.app_name }}:${{ github.sha }}
 
 
       - name: 🐳 Docker build & push
@@ -107,31 +90,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: |
-             ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ steps.github.outputs.tag_version }}
-      - name: Login via Azure CLI
-        uses: Azure/login@v1
-        with:
-          creds: '{"appId": "1ba1fe1e-d2eb-4232-bfb1-601b626ee926","displayName": "azure-cli-2023-06-19-10-06-05","password": "h6M8Q~aYJ9iIdGgekhaN.3nTx_vAQO2jMmryeaJJ","tenant": "3a3d8f93-8fe2-4192-a017-5a58b3b03565"}'
-          
-      - name: Setup Private Registry in Azure
-        uses: azure/CLI@v1
-        with:
-          azcliversion: 2.0.72
-          inlineScript: |
-            az functionapp config appsettings set \
-            --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
-            --resource-group ${{env.DEV_RG}} \
-            --settings DOCKER_REGISTRY_SERVER_URL=${{ env.DOCKER_REGISTRY }} \
-              DOCKER_REGISTRY_SERVER_USERNAME=${{ secrets.ARTIFACTORY_USER }} \
-              DOCKER_REGISTRY_SERVER_PASSWORD=${{ secrets.ARTIFACTORY_SAAS_API_KEY }}
-
-      - name: 'Run Azure Functions Action'
-        uses: Azure/functions-container-action@v1.0.2
-        id: deploy-to-functionApp
-        with:
-          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          image: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
-      - name: 🐳 Docker logout
-        if: always()
-        run: docker logout ${{ env.DOCKER_REGISTRY }}
+          tags: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:86758656
