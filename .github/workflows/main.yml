@@ -55,14 +55,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: function-app
-
-      - name: 'list files'
+          
+      - name: 'list files1'
         shell: bash
-        run: |
-           ls 
-           echo first
-           cd target
-           ls 
+        run: ls
 
       - name: 🧱 Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -70,13 +66,20 @@ jobs:
         with:
           install: true
           
+      - name: 'list files2'
+        shell: bash
+        run: ls
+          
       - name: Login to my Artifactory Docker Registry
         uses: docker/login-action@v2
         with:
           registry: ${{ env.DOCKER_REGISTRY }}
           username: ${{ env.DOCKER_USERNAME_REF }}
           password: ${{ env.DOCKER_SAAS_PASSWORD_REF }}
-
+          
+      - name: 'list files3'
+        shell: bash
+        run: ls
 
       - name: setting docker version
         id: github
@@ -86,8 +89,18 @@ jobs:
           version=`basename $1``date '+%s'`
           echo "Version:$version"
           echo  "::set-output name=tag_version::$version"
+          
+      - name: 'list files4'
+        shell: bash
+        run: ls
+        
       - name: print tag versions
         run: echo "tag-version:${{ steps.github.outputs.tag_version }}"
+
+      - name: 'list files5'
+        shell: bash
+        run: ls
+
 
       - name: 🐳 Docker build & push
         uses: docker/build-push-action@v3
