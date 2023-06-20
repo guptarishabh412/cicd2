@@ -5,4 +5,4 @@ RUN cd /src/java-function-app && \
     mkdir -p /home/site/wwwroot && \
     apt-get update && \
     apt-get install -y tree && \
-    tree . && \
+    tree . 
