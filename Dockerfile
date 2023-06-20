@@ -6,6 +6,3 @@ RUN cd /src/java-function-app && \
     apt-get update && \
     apt-get install -y tree && \
     tree . && \
-    cd ./target/azure-functions/ && \
-    cd $(ls -d */|head -n 1) &&  \
-    cp -a . /home/site/wwwroot
