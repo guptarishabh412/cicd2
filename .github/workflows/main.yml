@@ -15,7 +15,7 @@ env:
   POM_XML_DIRECTORY: '.'                     # set this to the directory which contains pom.xml file
   JAVA_VERSION: '11'                      # set this to the dotnet version to use
   DOCKER_REGISTRY: rifrog.jfrog.io
-  DOCKER_IMAGE: repokeytemp/imagename             #check  :tag
+  DOCKER_IMAGE: repokey/imagename             #check  :tag
   DOCKER_USERNAME_REF: rishabh.gupta@zopsmart.com
   DOCKER_SAAS_PASSWORD_REF: cmVmdGtuOjAxOjE3MTg3MDEyNjY6ZWk3REJrQ1NFT0lUQWF3dE1tNloyZXdLdEps #dckr_pat_LKGGPlHGDXH20WgyhA65wA9NXGg  #AKCp8oho7SvxvY2D7E6ZDQ4Nephv7wyhgYqcvVMF62ZNg2cRiLTctynBY5m3rTZDwbsBuXzzD
   AZURE_FUNCTIONAPP_NAME : az-function22-7
